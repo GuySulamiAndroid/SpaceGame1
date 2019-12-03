@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FinishGameActivity"
+    android:background="@drawable/background">
+
+    <TextView
+        android:id="@+id/final_score_LBL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="Your Score: 0"
+        android:layout_margin="50dp"
+        android:textColor="#FFFFFF"
+        android:textSize="40sp"
+        android:textStyle="bold|italic"/>
+
+    <TextView
+        android:id="@+id/high_score_LBL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_below="@id/final_score_LBL"
+        android:text="Highest Score: 0"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:textStyle="bold|italic"/>
+
+    <Button
+        android:id="@+id/play_again_BTN"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp"
+        android:text="Play Again"
+        android:textStyle="bold|italic"
+        android:textSize="40sp"
+        android:textAllCaps="false"
+        android:background="#F44336"/>
+
+</RelativeLayout>

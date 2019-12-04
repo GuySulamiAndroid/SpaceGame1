@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:text="Your Score: 0"
-        android:layout_margin="50dp"
+        android:layout_margin="30dp"
         android:textColor="#FFFFFF"
         android:textSize="40sp"
         android:textStyle="bold|italic"/>
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="90dp"
         android:text="Play Again"
         android:textStyle="bold|italic"
         android:textSize="40sp"

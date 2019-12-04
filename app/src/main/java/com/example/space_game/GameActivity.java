@@ -1,30 +1,36 @@
 package com.example.space_game;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.LoginFilter;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 
 public class GameActivity extends AppCompatActivity {
-    //Layouts
+    //Layout
     private RelativeLayout relativeLayout;
-    private LinearLayout linearLayout;
+
+    //Sounds
+    private SoundPlayer sound;
+
+    //vibration
+    final private int VIBRATE_TIME = 500;
 
     //Screen sizes
-    private int laneWidth, screenHeight, screenWidth;
+    private int laneWidth, screenWidth;
     final private int NUM_OF_LANES = 3;
     final private float SCREEN_ARRANGE = 310;
 
@@ -39,11 +45,19 @@ public class GameActivity extends AppCompatActivity {
     private int numOfLife;
     private ArrayList<ImageView> lifeArr = new ArrayList<>();
     private ImageView life1, life2, life3;
-    private boolean isGameOver;
 
     //difficulty
+    final private String LOW_LEVEL = "Low";
+    final private String MED_LEVEL= "Medium";
+    final private String HIGH_LEVEL = "High";
     private String currentLevel;
+    final private int LOW_SPEED = 40;
+    final private int MED_SPEED = 25;
+    final private int HIGH_SPEED = 10;
     private int speedLevel;
+    final private int SLOW_LAUNCH = 1450;
+    final private int MED_LAUNCH = 900;
+    final private int FAST_LAUNCH = 380;
     private int meteorCreation;
 
     // Score
@@ -54,9 +68,12 @@ public class GameActivity extends AppCompatActivity {
     private Button left;
     private Button right;
 
+    private boolean isPlayed;
+
     //Handlers
     final private Handler mainHandler = new Handler();
     final private Handler posHandler = new Handler();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +83,7 @@ public class GameActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_game);
+        sound = new SoundPlayer(this);
         initVars();
         initSpaceship();
         moveSpaceship();
@@ -79,31 +97,36 @@ public class GameActivity extends AppCompatActivity {
             public void run() {
                 startGame();
                 initMeteor();
-                isGameOver = isGameOver();
-                if(isGameOver){
-
-                }else{
-                    score++;
-                    scoreLabel.setText("Score: " + score);
-                    for (ImageView meteor : meteors) {
-                        if (isCrashed(meteor)) {
-                            Log.d("Crashed", "yesssss!");
-                            reduceOneLife();
-                            removeMeteorAfterCrash(meteor);
-                            break;
-                        }
-                    }
-                }
+                score++;
+                scoreLabel.setText("Score: " + score);
             }
         };
-        mainHandler.postDelayed(gameOn, meteorCreation);
+        if(isPlayed){
+            mainHandler.postDelayed(gameOn, meteorCreation);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isPlayed = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(!isPlayed) {
+            isPlayed = true;
+            startGame();
+            changeMeteorPosition();
+        }
     }
 
     private void initVars(){
         relativeLayout = findViewById(R.id.relativeLayout);
-        linearLayout = findViewById(R.id.linearLayout);
         setScreenDimensions();
         setGameSpeed();
+        isPlayed = true;
         numOfLife = MAX_LIFE;
         initLife();
         left = findViewById(R.id.leftButton);
@@ -134,7 +157,6 @@ public class GameActivity extends AppCompatActivity {
 
     private void initMeteorPosition(int randPosition, RelativeLayout.LayoutParams params){
         meteor.setX(SCREEN_ARRANGE);
-//        meteor.setLayoutParams(params);
         switch(randPosition){
             case 0:
                 meteor.setX(meteor.getX()- laneWidth);
@@ -157,10 +179,23 @@ public class GameActivity extends AppCompatActivity {
                 changeMeteorPosition();
                 for (ImageView meteor: meteors){
                     meteor.setY(meteor.getY() + 10);
+                    if(isMeteorOutOfScreen(meteor)) {
+                            removeMeteor(meteor);
+                            break;
+                    } else if (isCrashed(meteor)) {
+                        sound.playHitSound();
+                        vibrate();
+                        reduceOneLife();
+                        removeMeteor(meteor);
+                        isDead();
+                        break;
+                    }
                 }
             }
         };
-        posHandler.postDelayed(posRun, speedLevel);
+        if(isPlayed) {
+            posHandler.postDelayed(posRun, speedLevel);
+        }
     }
 
     private void initLife(){
@@ -172,32 +207,37 @@ public class GameActivity extends AppCompatActivity {
         lifeArr.add(life3);
     }
 
-    private void reduceOneLife(){
+    private void reduceOneLife() {
         numOfLife--;
-        if(!lifeArr.isEmpty()) {
-            lifeArr.get(lifeArr.size()-1).setVisibility(View.INVISIBLE);
+        if (!lifeArr.isEmpty()) {
+            lifeArr.get(lifeArr.size() - 1).setVisibility(View.INVISIBLE);
             lifeArr.remove(lifeArr.size() - 1);
         }
     }
 
-    private void removeMeteorAfterCrash(ImageView meteor){
-        relativeLayout.removeView(meteor);
+    private void isDead(){
+        if(isGameOver()){
+            mainHandler.removeCallbacksAndMessages(null);
+            posHandler.removeCallbacksAndMessages(null);
+            goToFinishActivity();
+        }
+    }
+
+    private boolean isMeteorOutOfScreen(ImageView meteor){
+        return meteor.getY() > spaceship.getY() + spaceship.getHeight();
+    }
+
+    private void removeMeteor(ImageView meteor){
         meteors.remove(meteor);
+        relativeLayout.removeView(meteor);
     }
 
     private boolean isCrashed(ImageView meteor){
-//        Rect R1 = new Rect();
-//        spaceship.getHitRect(R1);
-//        Rect R2 = new Rect();
-//        meteor.getHitRect(R2);
-        Log.d("IsCrashedX", "is:" + getCrashedX(meteor));
-        Log.d("IsCrashedY", "is:" + getCrashedY(meteor));
-//        return Rect.intersects(R1, R2);
         return getCrashedX(meteor) && getCrashedY(meteor);
     }
 
     private boolean getCrashedY(ImageView meteor){
-        return spaceship.getY() - 10 < (meteor.getY() + meteor.getHeight());
+        return spaceship.getY() <= (meteor.getY() + meteor.getHeight());
     }
 
     private boolean getCrashedX(ImageView meteor){
@@ -210,19 +250,21 @@ public class GameActivity extends AppCompatActivity {
 
     private void setGameSpeed(){
         currentLevel = getIntent().getStringExtra("CURRENT_LEVEL");
-        switch (currentLevel){
-            case "Low":
-                speedLevel = 60;
-                meteorCreation = 1700;
-                break;
-            case "Medium":
-                speedLevel = 40;
-                meteorCreation = 1200;
-                break;
-            case "High:":
-                speedLevel = 20;
-                meteorCreation = 1200;
-                break;
+        if(currentLevel != null) {
+            switch (currentLevel) {
+                case LOW_LEVEL:
+                    speedLevel = LOW_SPEED;
+                    meteorCreation = SLOW_LAUNCH;
+                    break;
+                case MED_LEVEL:
+                    speedLevel = MED_SPEED;
+                    meteorCreation = MED_LAUNCH;
+                    break;
+                case HIGH_LEVEL:
+                    speedLevel = HIGH_SPEED;
+                    meteorCreation = FAST_LAUNCH;
+                    break;
+            }
         }
     }
 
@@ -260,11 +302,22 @@ public class GameActivity extends AppCompatActivity {
     private void setScreenDimensions(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        screenHeight = displayMetrics.heightPixels;
         screenWidth = displayMetrics.widthPixels;
         laneWidth = screenWidth/NUM_OF_LANES;
     }
 
+    private void vibrate(){
+        Vibrator v = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+        if(v != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(VIBRATE_TIME,
+                        VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(VIBRATE_TIME);
+            }
+        }
+    }
     private void goToFinishActivity() {
         Intent intent = new Intent(GameActivity.this, FinishGameActivity.class);
         intent.putExtra("FINAL_SCORE", score);

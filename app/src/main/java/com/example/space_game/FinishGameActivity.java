@@ -60,7 +60,7 @@ public class FinishGameActivity extends AppCompatActivity {
     }
 
     private void displayHighestScore(){
-        highScoreLabel.setText("High Score: " + highScore);
+        highScoreLabel.setText("Highest Score: " + highScore);
     }
 
     private void comeBackToMain(){

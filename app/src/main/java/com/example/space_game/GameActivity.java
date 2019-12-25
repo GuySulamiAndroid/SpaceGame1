@@ -1,15 +1,19 @@
 package com.example.space_game;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -19,9 +23,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements SensorEventListener {
     //Layout
     private RelativeLayout relativeLayout;
+
+    //Sensors
+    private SensorManager sensorManager;
+    private Sensor sensor;
 
     //Sounds
     private SoundPlayer sound;
@@ -30,15 +38,15 @@ public class GameActivity extends AppCompatActivity {
     final private int VIBRATE_TIME = 500;
 
     //Screen sizes
-    private int laneWidth, screenWidth;
-    final private int NUM_OF_LANES = 3;
-    final private float SCREEN_ARRANGE = 310;
+    private int laneWidth, screenWidth, screenHeight;
+    final private int NUM_OF_LANES = 5;
 
     //Game participants objects and their size
-    private ImageView spaceship, meteor;
+    private ImageView spaceship, meteor, star;
     final private int OBJECT_HEIGHT = 100;
     final private int OBJECT_WIDTH = 100;
     private ArrayList<ImageView> meteors = new ArrayList<>();
+    private ArrayList<ImageView> stars = new ArrayList<>();
 
     //life
     final private int MAX_LIFE = 3;
@@ -47,17 +55,15 @@ public class GameActivity extends AppCompatActivity {
     private ImageView life1, life2, life3;
 
     //difficulty
-    final private String LOW_LEVEL = "Low";
-    final private String MED_LEVEL= "Medium";
-    final private String HIGH_LEVEL = "High";
-    private String currentLevel;
+    final private String SLOW_LEVEL = "Slow";
+    final private String FAST_LEVEL= "Fast";
+    final private String SENSOR = "Sensor";
+    private String currentMode;
     final private int LOW_SPEED = 40;
-    final private int MED_SPEED = 25;
-    final private int HIGH_SPEED = 10;
+    final private int HIGH_SPEED = 25;
     private int speedLevel;
     final private int SLOW_LAUNCH = 1450;
-    final private int MED_LAUNCH = 900;
-    final private int FAST_LAUNCH = 380;
+    final private int FAST_LAUNCH = 900;
     private int meteorCreation;
 
     // Score
@@ -88,7 +94,7 @@ public class GameActivity extends AppCompatActivity {
         initSpaceship();
         moveSpaceship();
         startGame();
-        changeMeteorPosition();
+        handleImagesEvents();
     }
 
     private void startGame(){
@@ -97,8 +103,8 @@ public class GameActivity extends AppCompatActivity {
             public void run() {
                 startGame();
                 initMeteor();
-                score++;
-                scoreLabel.setText("Score: " + score);
+                initStar();
+                increaseScore(1);
             }
         };
         if(isPlayed){
@@ -106,10 +112,18 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        isPlayed = false;
+    private void handleImagesEvents() {
+        Runnable posRun = new Runnable() {
+            @Override
+            public void run() {
+                handleImagesEvents();
+                handleMeteors();
+                handleStars();
+            }
+        };
+        if(isPlayed) {
+            posHandler.postDelayed(posRun, speedLevel);
+        }
     }
 
     @Override
@@ -118,14 +132,58 @@ public class GameActivity extends AppCompatActivity {
         if(!isPlayed) {
             isPlayed = true;
             startGame();
-            changeMeteorPosition();
+            handleImagesEvents();
         }
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isPlayed = false;
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+//        int currentSpeed = speedLevel;
+        if(currentMode.equals(SENSOR)){
+            relativeLayout.removeView(left);
+            relativeLayout.removeView(right);
+            speedLevel = HIGH_SPEED;
+            meteorCreation = FAST_LAUNCH;
+            float x = event.values[0];
+            float y = event.values[1];
+            if(x < -5){
+                Log.d("x", "is:" + x);
+                handleRightMovement();
+            }
+            if(x > 5){
+                Log.d("x", "is:" + x);
+                handleLeftMovement();
+            }
+//        if(y < 0){
+//            speedLevel-=10;
+//        }
+//        if(y > 0){
+//            speedLevel+=10;
+//        }
+//        if (y > (-5) && y < (5)) {
+//            speedLevel= currentSpeed;
+//        }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     private void initVars(){
         relativeLayout = findViewById(R.id.relativeLayout);
         setScreenDimensions();
-        setGameSpeed();
+        setGameMode();
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         isPlayed = true;
         numOfLife = MAX_LIFE;
         initLife();
@@ -135,12 +193,49 @@ public class GameActivity extends AppCompatActivity {
         score = 0;
     }
 
+    private void handleMeteors(){
+        for (ImageView meteor: meteors){
+            meteor.setY(meteor.getY() + 10);
+            if(isImageOutOfScreen(meteor)) {
+                removeImage(meteors, meteor);
+                break;
+            } else if (isCollided(meteor)) {
+//                sound.playHitSound();
+                vibrate();
+                reduceOneLife();
+                removeImage(meteors, meteor);
+                isDead();
+                break;
+            }
+        }
+    }
+
+    private void handleStars(){
+        for(ImageView star: stars){
+            star.setY(star.getY() + 10);
+            if(isImageOutOfScreen(star)){
+                removeImage(stars, star);
+                break;
+            }else if(isCollided(star)){
+//                sound.playGainSound();
+                increaseScore(3);
+                removeImage(stars,star);
+                break;
+            }
+        }
+    }
+
+    private void increaseScore(int points){
+        score+= points;
+        scoreLabel.setText("Score: " + score);
+    }
+
     private void initSpaceship(){
         spaceship = new ImageView(this);
         spaceship.setImageResource(R.drawable.ic_spaceship);
         RelativeLayout.LayoutParams spaceshipParams = new RelativeLayout.LayoutParams(OBJECT_WIDTH, OBJECT_HEIGHT);
-        spaceshipParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        spaceshipParams.addRule(RelativeLayout.ABOVE, left.getId()); //can use right.getId() as well
+        spaceship.setX(screenWidth/2 - 52);
+        spaceship.setY(screenHeight - 200);
         spaceship.setLayoutParams(spaceshipParams);
         relativeLayout.addView(spaceship);
     }
@@ -150,52 +245,27 @@ public class GameActivity extends AppCompatActivity {
         meteor.setImageResource(R.drawable.ic_meteor);
         int randPosition = (int)(Math.random() * NUM_OF_LANES);
         RelativeLayout.LayoutParams meteorParams = new RelativeLayout.LayoutParams(OBJECT_WIDTH, OBJECT_HEIGHT);
-        initMeteorPosition(randPosition, meteorParams);
+        initImagePosition(randPosition, meteorParams, meteor);
         relativeLayout.addView(meteor);
         meteors.add(meteor);
     }
 
-    private void initMeteorPosition(int randPosition, RelativeLayout.LayoutParams params){
-        meteor.setX(SCREEN_ARRANGE);
-        switch(randPosition){
-            case 0:
-                meteor.setX(meteor.getX()- laneWidth);
-                break;
-            case 1:
-                meteor.setX(meteor.getX());
-                break;
-            case 2:
-                meteor.setX(meteor.getX() + laneWidth);
-                break;
+    private void initStar(){
+        star = new ImageView(this);
+        star.setImageResource(R.drawable.ic_star);
+        int randPosition = (int)(Math.random() * NUM_OF_LANES);
+        RelativeLayout.LayoutParams meteorParams = new RelativeLayout.LayoutParams(OBJECT_WIDTH, OBJECT_HEIGHT);
+        initImagePosition(randPosition, meteorParams, star);
+        if(star.getX() != meteor.getX()){
+            relativeLayout.addView(star);
+            stars.add(star);
         }
-        meteor.setY(0);
-        meteor.setLayoutParams(params);
     }
 
-    private void changeMeteorPosition() {
-        Runnable posRun = new Runnable() {
-            @Override
-            public void run() {
-                changeMeteorPosition();
-                for (ImageView meteor: meteors){
-                    meteor.setY(meteor.getY() + 10);
-                    if(isMeteorOutOfScreen(meteor)) {
-                            removeMeteor(meteor);
-                            break;
-                    } else if (isCrashed(meteor)) {
-                        sound.playHitSound();
-                        vibrate();
-                        reduceOneLife();
-                        removeMeteor(meteor);
-                        isDead();
-                        break;
-                    }
-                }
-            }
-        };
-        if(isPlayed) {
-            posHandler.postDelayed(posRun, speedLevel);
-        }
+    private void initImagePosition(int randPosition, RelativeLayout.LayoutParams params, ImageView image){
+        image.setX(randPosition*laneWidth + 20);
+        image.setY(0);
+        image.setLayoutParams(params);
     }
 
     private void initLife(){
@@ -223,24 +293,24 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isMeteorOutOfScreen(ImageView meteor){
-        return meteor.getY() > spaceship.getY() + spaceship.getHeight();
+    private boolean isImageOutOfScreen(ImageView image){
+        return image.getY() > spaceship.getY() + spaceship.getHeight();
     }
 
-    private void removeMeteor(ImageView meteor){
-        meteors.remove(meteor);
-        relativeLayout.removeView(meteor);
+    private void removeImage(ArrayList<ImageView> images, ImageView image){
+        images.remove(image);
+        relativeLayout.removeView(image);
     }
 
-    private boolean isCrashed(ImageView meteor){
-        return getCrashedX(meteor) && getCrashedY(meteor);
+    private boolean isCollided(ImageView image){
+        return getCollisionX(image) && getCollisionY(image);
     }
 
-    private boolean getCrashedY(ImageView meteor){
+    private boolean getCollisionY(ImageView meteor){
         return spaceship.getY() <= (meteor.getY() + meteor.getHeight());
     }
 
-    private boolean getCrashedX(ImageView meteor){
+    private boolean getCollisionX(ImageView meteor){
         return spaceship.getX() == meteor.getX();
     }
 
@@ -248,19 +318,15 @@ public class GameActivity extends AppCompatActivity {
         return numOfLife == 0;
     }
 
-    private void setGameSpeed(){
-        currentLevel = getIntent().getStringExtra("CURRENT_LEVEL");
-        if(currentLevel != null) {
-            switch (currentLevel) {
-                case LOW_LEVEL:
+    private void setGameMode(){
+        currentMode = getIntent().getStringExtra("CURRENT_LEVEL");
+        if(currentMode != null) {
+            switch (currentMode) {
+                case SLOW_LEVEL:
                     speedLevel = LOW_SPEED;
                     meteorCreation = SLOW_LAUNCH;
                     break;
-                case MED_LEVEL:
-                    speedLevel = MED_SPEED;
-                    meteorCreation = MED_LAUNCH;
-                    break;
-                case HIGH_LEVEL:
+                case FAST_LEVEL:
                     speedLevel = HIGH_SPEED;
                     meteorCreation = FAST_LAUNCH;
                     break;
@@ -269,39 +335,48 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void moveSpaceship(){
-        moveLeft();
-        moveRight();
+        moveLeftByButton();
+        moveRightByButton();
     }
 
-    private void moveLeft(){
+    private void moveLeftByButton(){
         left.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float newPosition = spaceship.getX() - laneWidth;
-                if(newPosition < 0){
-                    newPosition = spaceship.getX();
-                }
-                spaceship.setX(newPosition);
+                handleLeftMovement();
             }
         });
     }
 
-    private void moveRight(){
+    private void handleLeftMovement(){
+        float newPosition = spaceship.getX() - laneWidth;
+        if(newPosition < 0){
+            newPosition = spaceship.getX();
+        }
+        spaceship.setX(newPosition);
+    }
+
+    private void moveRightByButton(){
         right.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float newPosition = spaceship.getX() + laneWidth;
-                if(newPosition > screenWidth){
-                    newPosition = spaceship.getX();
-                }
-                spaceship.setX(newPosition);
+                handleRightMovement();
             }
         });
+    }
+
+    private void handleRightMovement(){
+        float newPosition = spaceship.getX() + laneWidth;
+        if(newPosition > screenWidth){
+            newPosition = spaceship.getX();
+        }
+        spaceship.setX(newPosition);
     }
 
     private void setScreenDimensions(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenHeight = displayMetrics.heightPixels;
         screenWidth = displayMetrics.widthPixels;
         laneWidth = screenWidth/NUM_OF_LANES;
     }

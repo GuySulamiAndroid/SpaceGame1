@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +15,7 @@
         android:textStyle="italic|bold"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:textSize="50dp"
+        android:textSize="50sp"
         android:layout_marginTop="100dp"
         android:textColor="#FCE2E2"
         >
@@ -36,7 +35,7 @@
             android:layout_marginTop="100dp"
             android:background="#000000"
             android:layout_gravity="center_horizontal|center"
-            android:text="Low"
+            android:text="Slow"
             android:textAllCaps="false">
         </Button>
 
@@ -49,7 +48,7 @@
             android:layout_marginVertical="50dp"
             android:background="#000000"
             android:layout_gravity="center_horizontal|center"
-            android:text="Medium"
+            android:text="Fast"
             android:textAllCaps="false">
         </Button>
 
@@ -61,7 +60,7 @@
             android:textColor="#E71616"
             android:background="#000000"
             android:layout_gravity="center_horizontal|center"
-            android:text="High"
+            android:text="Sensor"
             android:textAllCaps="false">
         </Button>
 

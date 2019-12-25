@@ -11,10 +11,10 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button lowLevel;
-    private Button mediumLevel;
-    private Button highLevel;
-    private String currentLevel;
+    private Button slow;
+    private Button fast;
+    private Button sensor;
+    private String currentMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,30 +25,30 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        lowLevel = findViewById(R.id.lowLevel);
-        mediumLevel = findViewById(R.id.mediumLevel);
-        highLevel = findViewById(R.id.highLevel);
+        slow = findViewById(R.id.lowLevel);
+        fast = findViewById(R.id.mediumLevel);
+        sensor = findViewById(R.id.highLevel);
 
-        lowLevel.setOnClickListener(new View.OnClickListener() {
+        slow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentLevel = lowLevel.getText().toString();
+                currentMode = slow.getText().toString();
                 goToGameActivity();
             }
         });
 
-        mediumLevel.setOnClickListener(new View.OnClickListener() {
+        fast.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentLevel = mediumLevel.getText().toString();
+                currentMode = fast.getText().toString();
                 goToGameActivity();
             }
         });
 
-        highLevel.setOnClickListener(new View.OnClickListener() {
+        sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentLevel = highLevel.getText().toString();
+                currentMode = sensor.getText().toString();
                 goToGameActivity();
             }
         });
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void goToGameActivity() {
         Intent intent = new Intent(MainActivity.this, GameActivity.class);
-        intent.putExtra("CURRENT_LEVEL", currentLevel);
+        intent.putExtra("CURRENT_LEVEL", currentMode);
         startActivity(intent);
     }
 }

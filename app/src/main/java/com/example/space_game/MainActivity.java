@@ -11,9 +11,7 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button slow;
-    private Button fast;
-    private Button sensor;
+    private Button slow, fast, sensor, highScores;
     private String currentMode;
 
     @Override
@@ -28,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         slow = findViewById(R.id.lowLevel);
         fast = findViewById(R.id.mediumLevel);
         sensor = findViewById(R.id.highLevel);
+        highScores = findViewById(R.id.highScores_BTN);
 
         slow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,11 +51,23 @@ public class MainActivity extends AppCompatActivity {
                 goToGameActivity();
             }
         });
+
+        highScores.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToResultsScreen();
+            }
+        });
     }
 
     private void goToGameActivity() {
         Intent intent = new Intent(MainActivity.this, GameActivity.class);
         intent.putExtra("CURRENT_LEVEL", currentMode);
+        startActivity(intent);
+    }
+
+    private void goToResultsScreen(){
+        Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
         startActivity(intent);
     }
 }

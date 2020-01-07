@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,15 +19,60 @@
         android:textStyle="bold|italic"/>
 
     <TextView
-        android:id="@+id/high_score_LBL"
+        android:id="@+id/enter_name_LBL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/final_score_LBL"
+        android:text="Enter your name:"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="30dp"
+        android:textColor="#FFFFFF"
+        android:textSize="25sp"
+        android:textStyle="bold|italic"/>
+
+    <EditText
+        android:id="@+id/name_INPUT"
+        android:autofillHints=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="5"
+        android:layout_below="@id/final_score_LBL"
+        android:layout_toEndOf="@id/enter_name_LBL"
+        android:inputType="textPersonName"
+        android:layout_marginStart="10dp"
+        android:textColor="#FFFFFF"
+        android:textSize="25sp"
+        android:textStyle="bold|italic">
+        <requestFocus/>
+    </EditText>
+
+    <Button
+        android:id="@+id/save_BTN"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_below="@id/final_score_LBL"
-        android:text="Highest Score: 0"
-        android:textColor="#FFFFFF"
+        android:layout_below="@id/enter_name_LBL"
+        android:layout_marginTop="40dp"
+        android:text="Save"
+        android:textStyle="bold|italic"
+        android:textColor="#000000"
         android:textSize="30sp"
-        android:textStyle="bold|italic"/>
+        android:textAllCaps="false"
+        android:background="#F44336"/>
+
+    <Button
+        android:id="@+id/show_results_BTN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/play_again_BTN"
+        android:layout_marginBottom="50dp"
+        android:text="High Scores"
+        android:textStyle="bold|italic"
+        android:textColor="#000000"
+        android:textSize="40sp"
+        android:textAllCaps="false"
+        android:background="#F44336"/>
 
     <Button
         android:id="@+id/play_again_BTN"

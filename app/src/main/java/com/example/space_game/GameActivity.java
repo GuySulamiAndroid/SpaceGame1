@@ -155,11 +155,11 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             float x = event.values[0];
             float y = event.values[1];
             if(x < -5){
-                Log.d("x", "is:" + x);
+                Log.d("x when right", "is:" + x);
                 handleRightMovement();
             }
             if(x > 5){
-                Log.d("x", "is:" + x);
+                Log.d("x when left", "is:" + x);
                 handleLeftMovement();
             }
 //        if(y < 0){
@@ -200,7 +200,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
                 removeImage(meteors, meteor);
                 break;
             } else if (isCollided(meteor)) {
-//                sound.playHitSound();
+                sound.playHitSound();
                 vibrate();
                 reduceOneLife();
                 removeImage(meteors, meteor);
@@ -217,7 +217,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
                 removeImage(stars, star);
                 break;
             }else if(isCollided(star)){
-//                sound.playGainSound();
+                sound.playGainSound();
                 increaseScore(3);
                 removeImage(stars,star);
                 break;
@@ -397,5 +397,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         Intent intent = new Intent(GameActivity.this, FinishGameActivity.class);
         intent.putExtra("FINAL_SCORE", score);
         startActivity(intent);
+        finish();
     }
 }

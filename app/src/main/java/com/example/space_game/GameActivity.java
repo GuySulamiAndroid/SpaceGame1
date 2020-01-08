@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -59,8 +58,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     final private String FAST_LEVEL= "Fast";
     final private String SENSOR = "Sensor";
     private String currentMode;
-    final private int LOW_SPEED = 40;
-    final private int HIGH_SPEED = 25;
+    final private int LOW_SPEED = 30;
+    final private int HIGH_SPEED = 20;
     private int speedLevel;
     final private int SLOW_LAUNCH = 1450;
     final private int FAST_LAUNCH = 900;
@@ -146,22 +145,20 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-//        int currentSpeed = speedLevel;
         if(currentMode.equals(SENSOR)){
             relativeLayout.removeView(left);
             relativeLayout.removeView(right);
             speedLevel = HIGH_SPEED;
             meteorCreation = FAST_LAUNCH;
             float x = event.values[0];
-            float y = event.values[1];
-            if(x < -5){
-                Log.d("x when right", "is:" + x);
+            if(x < -3){
                 handleRightMovement();
             }
-            if(x > 5){
-                Log.d("x when left", "is:" + x);
+            if(x > 3){
                 handleLeftMovement();
             }
+//  ------------ run app faster by tilt up and down ------------------
+//        int currentSpeed = speedLevel;
 //        if(y < 0){
 //            speedLevel-=10;
 //        }
@@ -234,8 +231,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         spaceship = new ImageView(this);
         spaceship.setImageResource(R.drawable.ic_spaceship);
         RelativeLayout.LayoutParams spaceshipParams = new RelativeLayout.LayoutParams(OBJECT_WIDTH, OBJECT_HEIGHT);
-        spaceship.setX(screenWidth/2 - 52);
         spaceship.setY(screenHeight - 200);
+        spaceship.setX(laneWidth*2 + 20);
         spaceship.setLayoutParams(spaceshipParams);
         relativeLayout.addView(spaceship);
     }
@@ -260,6 +257,10 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             relativeLayout.addView(star);
             stars.add(star);
         }
+    }
+
+    private void initSpaceshipPosition(){
+
     }
 
     private void initImagePosition(int randPosition, RelativeLayout.LayoutParams params, ImageView image){

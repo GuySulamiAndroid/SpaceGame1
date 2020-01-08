@@ -2,25 +2,19 @@ package com.example.space_game;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
 public class ResultFragment extends Fragment {
@@ -130,12 +124,7 @@ public class ResultFragment extends Fragment {
     }
 
     private void setCurrentLocation(){
-        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(getActivity());
-        requestPermission();
-        if(ActivityCompat.checkSelfPermission(context, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-
-        }
-        client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+        FinishGameActivity.client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 if(location != null){
@@ -149,7 +138,5 @@ public class ResultFragment extends Fragment {
         });
     }
 
-    private void requestPermission(){
-        ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION}, 1);
-    }
+
 }

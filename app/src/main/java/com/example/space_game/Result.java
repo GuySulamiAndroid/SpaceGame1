@@ -18,7 +18,7 @@ public class Result implements Comparable<Result>{
         return playerName;
     }
 
-    private int getScore() {
+    public int getScore() {
         return score;
     }
 

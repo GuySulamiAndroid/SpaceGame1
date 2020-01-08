@@ -3,6 +3,7 @@ package com.example.space_game;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,6 +40,7 @@ public class FinishGameActivity extends AppCompatActivity {
         saveBTN = findViewById(R.id.save_BTN);
         showResultsBTN = findViewById(R.id.show_results_BTN);
         playAgainBTN = findViewById(R.id.play_again_BTN);
+
     }
 
     private void saveResult() {

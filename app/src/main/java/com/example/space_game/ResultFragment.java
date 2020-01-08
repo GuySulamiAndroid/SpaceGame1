@@ -49,20 +49,33 @@ public class ResultFragment extends Fragment {
             view = inflater.inflate(R.layout.fragment_result, container, false);
         }
         list_LST_results = view.findViewById(R.id.list_LST_results);
-        setCurrentLocation();
-        newResult = new Result(FinishGameActivity.playerName, FinishGameActivity.finalScore, currentLat, currentLng);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         list_LST_results.setLayoutManager(layoutManager);
         resultPrefs = context.getSharedPreferences("GAME_DATA", Context.MODE_PRIVATE);
         createListOfResults();
-        updateResults();
-        saveResultsToSharedPrefs();
+        if(FinishGameActivity.playerName != null){
+            if(!isResultExists()){
+                setCurrentLocation();
+            }
+        }
         initList();
         return view;
     }
 
+    private boolean isResultExists(){
+        for(int i=0; i < results.size(); i++){
+            if(results.get(i).getPlayerName().equals(FinishGameActivity.playerName) && results.get(i).getScore() == FinishGameActivity.finalScore) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void createListOfResults() {
         results = getResultsFromSharedPrefs();
+        if (results == null) {
+            results = new ArrayList<>();
+        }
         adapter_resultModel = new Adapter_ResultModel(getActivity(), results);
     }
 
@@ -93,10 +106,7 @@ public class ResultFragment extends Fragment {
 
     private void updateResults() {
         final int MAX_RESULTS_SIZE = 10;
-        if (results == null) {
-            results = new ArrayList<>();
-        }
-        if (results.isEmpty() || results.size() < MAX_RESULTS_SIZE) {
+        if (results.size() < MAX_RESULTS_SIZE) {
             results.add(newResult);
             adapter_resultModel.updateList(results);
         } else {
@@ -131,6 +141,9 @@ public class ResultFragment extends Fragment {
                 if(location != null){
                     currentLng = location.getLongitude();
                     currentLat = location.getLatitude();
+                    newResult = new Result(FinishGameActivity.playerName, FinishGameActivity.finalScore, currentLat, currentLng);
+                    updateResults();
+                    saveResultsToSharedPrefs();
                 }
             }
         });

@@ -151,12 +151,27 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             speedLevel = HIGH_SPEED;
             meteorCreation = FAST_LAUNCH;
             float x = event.values[0];
-            if(x < -3){
-                handleRightMovement();
+            if(x < 10 && x > 6){
+                spaceship.setX(20);
+//                handleRightMovement();
             }
-            if(x > 3){
-                handleLeftMovement();
+
+            if(x < 6 && x > 2){
+                spaceship.setX(laneWidth + 20);
             }
+
+            if(x < 2 && x > -2){
+                spaceship.setX(2*laneWidth + 20);
+            }
+
+            if(x < -2 && x > -6){
+                spaceship.setX(3*laneWidth + 20);
+            }
+
+            if(x < -6 && x > -10){
+                spaceship.setX(4*laneWidth + 20);
+            }
+
 //  ------------ run app faster by tilt up and down ------------------
 //        int currentSpeed = speedLevel;
 //        if(y < 0){
